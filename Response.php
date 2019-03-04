@@ -1,16 +1,17 @@
-<?php
+<?php require_once __DIR__ . '/Render.php';
 
 class Response {
 
     private $_baseUrl;
     private $_viewsPath = null;
 
-	/**
-	 * @return string
-	 */
-	public function getBaseUrl() {
-		return $this->_baseUrl;
-	}
+    /**
+     * @return string
+     */
+    public function getBaseUrl() {
+        return $this->_baseUrl;
+    }
+
     /**
      * Response constructor.
      * @param string $baseUrl http url
@@ -34,59 +35,9 @@ class Response {
      * @param array $params sended to the view
      */
     public function render(string $viewPath, array $params = []) {
-
-        /**
-         * Load something ['js' or 'css']
-         * @param string|string[] $files
-         * @param string $type
-         */
-        function load($files, string $type) {
-            if (!is_array($files)) $files = [$files];
-
-            foreach ($files as $file) {
-                if ($file == "") continue;
-                if (!(substr($file, 0, 2) == '//'
-                    || substr($file, 0, 4) == "http"))
-                    $file = BASE_URL . $file;
-                switch ($type) {
-                    case 'css':
-                        echo "<link rel='stylesheet' type='text/css' href='$file'>";
-                        break;
-                    case 'js':
-                        echo "<script type='text/javascript' src='$file'></script>";
-                        break;
-                }
-            }
-        }
-
-        /**
-         * Load html meta ["metaname" => "value"]
-         * @param array $metas
-         */
-        function loadMeta(array $metas) {
-            foreach ($metas as $key => $value) { ?>
-                <meta name="<?= $key ?>" content="<?= $value ?>">
-            <?php }
-        }
-
-        /**
-         * Load css files
-         * @param string|string[] $files
-         */
-        function loadStyles($files) {
-            load($files, 'css');
-        }
-
-        /**
-         * Load js files
-         * @param string|string[] $files
-         */
-        function loadScripts($files) {
-            load($files, 'js');
-        }
-
         $this->setContentType("text/html");
         extract($params);
+        $_ = new Render($this->getBaseUrl());
         require_once $this->_viewsPath != null ? $this->_viewsPath."/".$viewPath : $viewPath; // if no file => error (intentional)
         $this->stopExec();
     }
