@@ -44,7 +44,7 @@ class Render {
     private function pathFile(string $file): string {
         if (!(substr($file, 0, 2) == '//'
             || substr($file, 0, 4) == "http"))
-            $file = BASE_URL . $file;
+            $file = $this->getBaseUrl() . $file;
         return $file;
     }
 
