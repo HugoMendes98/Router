@@ -9,6 +9,7 @@ class Router {
     const POST = 'POST';
 
     private $_baseUrl;
+    private $_subRoute;
     private $_url;
     private $_method;
 
@@ -58,12 +59,14 @@ class Router {
 
     /**
      * Create the router
-     * @param string|null $baseUrl usefull if it's a router in 'on' function
+     * @param string $subRoute for an inner path
      */
-    public function __construct(string $baseUrl = null) {
-        $this->_baseUrl = $baseUrl !== null ? $baseUrl : pathinfo($_SERVER['PHP_SELF'], PATHINFO_DIRNAME);
+    public function __construct(string $subRoute = "") {
+        $this->_baseUrl = pathinfo($_SERVER['PHP_SELF'], PATHINFO_DIRNAME);
         $this->_url = $this->removeSlash(str_replace($this->_baseUrl, "" , $_SERVER["REQUEST_URI"]));
         $this->_method = $_SERVER["REQUEST_METHOD"]; //GET || POST
+
+        $this->_subRoute = $subRoute;
     }
 
     /**
@@ -82,10 +85,7 @@ class Router {
     }
 
     private function removeSlash(string $string) {
-        if (substr($string, -1) === '/') {
-            return substr($string, 0, -1);
-        }
-        return $string;
+        return substr($string, -1) === '/' ? substr($string, 0, -1) : $string;
     }
 
     /**
@@ -115,7 +115,7 @@ class Router {
      */
     private function testUrl(string $uri, callable $callback) {
         // To Do (improve)
-        $uri = $this->removeSlash($uri);
+        $uri = $this->removeSlash($this->_subRoute . $uri);
 
         $url = $this->_url;
 
@@ -182,7 +182,7 @@ class Router {
      */
     public function use(string $url, $routesOrCallable, ...$params) {
         if (is_callable($routesOrCallable))
-            $routesOrCallable(new Router($this->getBaseURL() . $url), $params);
+            $routesOrCallable(new Router($this->_subRoute . $url), $params);
         else
             foreach ($routesOrCallable as $key => $route) {
                 if (substr($key, 0, 1) !== '/')
