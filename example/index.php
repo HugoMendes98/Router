@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/Router.php';
+require_once __DIR__ . '/../Router.php';
 define('PUBLIC_FOLDER', __DIR__ . '/public');
 
 $router = new Router();
