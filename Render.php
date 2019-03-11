@@ -96,13 +96,18 @@ class Render {
     /**
      * load all scripts (try to call it one time)
      * @param array $scripts
-     * @param bool $addConst add a js const with the base url
+     * @param array $consts add js consts (["varName" => value])
      */
-    public function loadScripts(array $scripts = [], bool $addConst = true) {
+    public function loadScripts(array $scripts = [], array $consts = []) {
         $this->addScripts($scripts);
-        if ($addConst) ?>
-            <script type="text/javascript">const base_url = "<?= $this->getBaseUrl() ?>";</script>
-        <?php foreach ($this->scripts as $script) { ?>
+
+        if (!empty($consts)) { ?>
+            <script type="text/javascript"><?php
+                foreach ($consts as $name => $value) echo "const $name = " . json_encode($value) . ";";
+            ?></script>
+        <?php }
+
+        foreach ($this->scripts as $script) { ?>
            <script type="text/javascript" src="<?= $script ?>"></script>
         <?php }
     }
