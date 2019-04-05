@@ -182,7 +182,7 @@ class Router {
      */
     public function use(string $url, $routesOrCallable, ...$params) {
         if (is_callable($routesOrCallable))
-            $routesOrCallable(new Router($this->_subRoute . $url), $params);
+            $routesOrCallable(new Router($this->_subRoute . $url), ...$params);
         else
             foreach ($routesOrCallable as $key => $route) {
                 if (substr($key, 0, 1) !== '/')
