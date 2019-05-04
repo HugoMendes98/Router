@@ -74,12 +74,14 @@ class Router {
      * @param string|string[] $extension
      * @param string $folder
      * @param string $contentType
+     * @param bool $errorNotFound Raise an error if file not found
      * @return Router $this
      */
-    public function byExt($extension, string $folder, $contentType = null) {
+    public function byExt($extension, string $folder, $contentType = null, $errorNotFound = false) {
         $extension = is_array($extension) ? $extension : [$extension];
         if (in_array(pathinfo($this->_url, PATHINFO_EXTENSION), $extension)) {
-            (new Response($this->_baseUrl, $this->_viewsPath))->sendFile($folder . $this->_url, $contentType);
+            if ($errorNotFound || file_exists($folder . $this->_url))
+                (new Response($this->_baseUrl, $this->_viewsPath))->sendFile($folder . $this->_url, $contentType);
         }
         return $this;
     }

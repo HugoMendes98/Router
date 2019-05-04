@@ -67,7 +67,7 @@ class Response {
             if ($contentType == null) {
                 $contentType = mime_content_type($file);
                 if ($contentType == "text/plain") {
-                    $mimeTypes = json_decode(file_get_contents(PRIVATE_FOLDER . 'Class/MIME_TYPES.json'), true);
+                    $mimeTypes = json_decode(file_get_contents(__DIR__ . '/mime_types.json'), true);
                     $ext = pathinfo($file, PATHINFO_EXTENSION);
                     $contentType = isset($mimeTypes[$ext]) ? $mimeTypes[$ext] : "text/plain";
                 }
