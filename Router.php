@@ -183,8 +183,10 @@ class Router {
      * @return Router $this
      */
     public function use(string $url, $routesOrCallable, ...$params) {
-        if (is_callable($routesOrCallable))
-            $routesOrCallable(new Router($this->_subRoute . $url), ...$params);
+        if (is_callable($routesOrCallable)) {
+            if (substr($this->_url, 0, strlen($this->_subRoute . $url)) == $this->_subRoute . $url)
+                $routesOrCallable(new Router($this->_subRoute . $url), ...$params);
+        }
         else
             foreach ($routesOrCallable as $key => $route) {
                 if (substr($key, 0, 1) !== '/')
