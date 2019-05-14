@@ -70,10 +70,27 @@ class Router {
     }
 
     /**
+     * Use the start path given to redirect to a directory
+     * @param string $path
+     * @param string $folder
+     * @param string|null $contentType
+     * @param bool $errorNotFound Raise an error if file not found
+     * @return $this
+     */
+    public function byEntry(string $path, string $folder, $contentType = null, $errorNotFound = false) {
+        $this->get($this->removeSlash($path) . '/*', function (Response $res, $args) use ($folder, $contentType, $errorNotFound) {
+            $file = $folder . '/' . $args[0];
+            if ($errorNotFound || file_exists($file))
+                $res->sendFile($file, $contentType);
+        });
+        return $this;
+    }
+
+    /**
      * Use the extension of the uri to redirect
      * @param string|string[] $extension
      * @param string $folder
-     * @param string $contentType
+     * @param string|null $contentType
      * @param bool $errorNotFound Raise an error if file not found
      * @return Router $this
      */

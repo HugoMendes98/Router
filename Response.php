@@ -98,7 +98,7 @@ class Response {
     }
 
     /**
-     * @param string $stringHeader
+     * @param string $header
      * @param bool $replace
      * @param null|int $http_response_code
      */
