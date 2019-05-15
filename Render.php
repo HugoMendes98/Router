@@ -37,13 +37,13 @@ class Render {
     }
 
     /**
-     * set the base url if isn't an external file
+     * set the base url if isn't an external file (need start with a '/')
      * @param string $file
      * @return string
      */
     private function pathFile(string $file): string {
-        if (!(substr($file, 0, 2) == '//'
-            || substr($file, 0, 4) == "http"))
+        if ((!(substr($file, 0, 2) == '//'
+            || substr($file, 0, 4) == "http")) && substr($file, 0, 1) == '/')
             $file = $this->getBaseUrl() . $file;
         return $file;
     }
