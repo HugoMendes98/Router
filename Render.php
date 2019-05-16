@@ -3,6 +3,7 @@
 class Render {
     private $scripts = [];
     private $styles = [];
+    private $constants = [];
 
     private $base_url = '';
 
@@ -18,6 +19,20 @@ class Render {
      */
     public function getStyles(): array {
         return $this->styles;
+    }
+
+    /**
+     * @return array[string]
+     */
+    public function getJSConstants(): array {
+        return $this->constants;
+    }
+
+    /**
+     * @param array $constants
+     */
+    public function setJSConstants(array $constants) {
+        $this->constants = $constants;
     }
 
     /**
@@ -77,6 +92,16 @@ class Render {
     }
 
     /**
+     * Add many JS constants
+     * @param array[string] $consts ["varName" => value, ...]
+     */
+    public function addJSConstants(array $consts) {
+        foreach ($consts as $varName => $const) {
+            if ($varName != "") $this->constants[$varName] = $const;
+        }
+    }
+
+    /**
      * Add a script file
      * @param string $script
      */
@@ -96,14 +121,15 @@ class Render {
     /**
      * load all scripts (try to call it one time)
      * @param array $scripts
-     * @param array $consts add js consts (["varName" => value])
+     * @param array $consts add js consts (["varName" => value, ...])
      */
     public function loadScripts(array $scripts = [], array $consts = []) {
+        $this->addJSConstants($consts);
         $this->addScripts($scripts);
 
-        if (!empty($consts)) { ?>
+        if (!empty($this->constants)) { ?>
             <script type="text/javascript"><?php
-                foreach ($consts as $name => $value) echo "const $name = " . json_encode($value) . ";";
+                foreach ($this->constants as $name => $value) echo "const $name = " . json_encode($value) . ";";
             ?></script>
         <?php }
 
