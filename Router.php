@@ -156,7 +156,7 @@ class Router {
         if ($isOk) {
             if(!empty($matches))
                 array_splice($matches, 0, 1);
-            $callback(new Response($this->_baseUrl, $this->_viewsPath), $matches);
+            $callback(new Response($this), $matches);
         }
     }
 

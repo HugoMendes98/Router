@@ -4,6 +4,7 @@ class Response {
 
     private $_baseUrl;
     private $_viewsPath = null;
+    private $_method = "GET";
 
     /**
      * @return string
@@ -12,14 +13,21 @@ class Response {
         return $this->_baseUrl;
     }
 
+	/**
+	 * @return string
+	 */
+	public function getMethod(): string {
+		return $this->_method;
+	}
+
     /**
      * Response constructor.
-     * @param string $baseUrl http url
-     * @param string|null $viewsPath views folder
+     * @param Router
      */
-    public function __construct(string $baseUrl, string $viewsPath = null) {
-        $this->_baseUrl = $baseUrl;
-        $this->_viewsPath = $viewsPath;
+    public function __construct(Router $router) {
+        $this->_baseUrl = $router->getBaseURL();
+        $this->_viewsPath = $router->getViewsPath();
+        $this->_method = $router->getMethod();
     }
 
     /**
@@ -49,9 +57,11 @@ class Response {
      * @param string $contentType
      * @param boolean $stopScript to send more data
      */
-    public function send($data, bool $jsonEncode = true, $contentType = null, bool $stopScript = true) {
+    public function send($data, int $statusCode = 200, bool $jsonEncode = true, $contentType = null, bool $stopScript = true) {
         if ($contentType == null)
             $contentType = is_array($data) ? "application/json" : (new finfo(FILEINFO_MIME))->buffer((string)$data);
+
+        http_response_code($statusCode);
         $this->setContentType($contentType);
         echo !$jsonEncode ? $data : json_encode($data);
 
@@ -75,7 +85,7 @@ class Response {
             $this->setContentType($contentType);
             readfile($file);
         } else
-            echo json_encode("Error: no file at " . $file);
+            http_response_code(404);
         $this->stopExec();
     }
 
@@ -83,9 +93,10 @@ class Response {
      * Redirect to an URL
      * @param string $url
      * @param bool $local
+	 * @param bool $permant
      */
-    public function redirect(string $url, bool $local = true) {
-        $this->setHeader("Location: " . ($local ? $this->_baseUrl : '') . $url);
+    public function redirect(string $url, bool $local = true, bool $permant = false) {
+        $this->setHeader("Location: " . ($local ? $this->_baseUrl : '') . $url, true, $permant ? 301 : 302);
         $this->stopExec();
     }
 
