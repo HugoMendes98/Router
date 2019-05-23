@@ -98,7 +98,7 @@ class Router {
         $extension = is_array($extension) ? $extension : [$extension];
         if (in_array(pathinfo($this->_url, PATHINFO_EXTENSION), $extension)) {
             if ($errorNotFound || file_exists($folder . $this->_url))
-                (new Response($this->_baseUrl, $this->_viewsPath))->sendFile($folder . $this->_url, $contentType);
+                (new Response($this))->sendFile($folder . $this->_url, $contentType);
         }
         return $this;
     }
