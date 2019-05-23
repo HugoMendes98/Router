@@ -201,8 +201,12 @@ class Router {
      */
     public function use(string $url, $routesOrCallable, ...$params) {
         if (is_callable($routesOrCallable)) {
-            if (substr($this->_url, 0, strlen($this->_subRoute . $url)) == $this->_subRoute . $url)
-                $routesOrCallable(new Router($this->_subRoute . $url), ...$params);
+            $subURL = $this->_subRoute . $url;
+            for ($length = 0; $length < strlen($subURL); $length++)
+                if (in_array($subURL[$length], ['*', ':'])) break;
+
+            if (substr($this->_url, 0, $length) == substr($subURL, 0, $length))
+                $routesOrCallable(new Router($subURL), ...$params);
         }
         else
             foreach ($routesOrCallable as $key => $route) {
