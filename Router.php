@@ -195,18 +195,22 @@ class Router {
     /**
      *
      * @param string $url
-     * @param string[]|callable(Router) $routesOrCallable
+     * @param string[]|callable(Router)|string $routesOrCallable callable or path to file with callable
      * @param mixed ...$params to send to the callable
      * @return Router $this
      */
     public function use(string $url, $routesOrCallable, ...$params) {
-        if (is_callable($routesOrCallable)) {
+        if (is_callable($routesOrCallable) || file_exists($routesOrCallable)) {
             $subURL = $this->_subRoute . $url;
             for ($length = 0; $length < strlen($subURL); $length++)
                 if (in_array($subURL[$length], ['*', ':'])) break;
 
-            if (substr($this->_url, 0, $length) == substr($subURL, 0, $length))
-                $routesOrCallable(new Router($subURL), ...$params);
+            if (substr($this->_url, 0, $length) == substr($subURL, 0, $length)) {
+            	if (file_exists($routesOrCallable))
+					(require $routesOrCallable)(new Router($subURL), ...$params);
+				else
+					$routesOrCallable(new Router($subURL), ...$params);
+			}
         }
         else
             foreach ($routesOrCallable as $key => $route) {
