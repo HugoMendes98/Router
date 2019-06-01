@@ -3,6 +3,9 @@
 // TODO: can disable time incrementing and integrate this
 class Session {
 
+	private $_session;
+	private $_increment = true;
+
 	private $key = "";
 	private $timeout = 0;
 
@@ -14,15 +17,32 @@ class Session {
 	}
 
 	/**
+	 * Setting this option will automatically activates the incrementing of timeout
 	 * @param int $timeout
 	 */
 	public function setTimeout(int $timeout): void {
 		if ($timeout < 0) $timeout = 0;
 		$this->timeout = $timeout;
-		session_set_cookie_params($timeout);
+		$this->_increment = true;
+		@session_set_cookie_params($timeout);
 
-		$_SESSION[$this->key]["__end__"] = $timeout > 0 ?
+		$this->_session["__end__"] = $timeout > 0 ?
 			time() + $timeout : 0;
+	}
+
+	/**
+	 * Active the incrementation for the current session only
+	 * @param bool $increment
+	 */
+	public function incrementTimeout(bool $increment): void {
+		if ($increment !== $this->_increment) {
+			if ($increment)
+				$this->setTimeout($this->getTimeout());
+			else {
+				$this->_session["__end__"] -= $this->getTimeout();
+				$this->_increment = false;
+			}
+		}
 	}
 
 	/**
@@ -30,34 +50,34 @@ class Session {
 	 * @return int
 	 */
 	public function getStartTime(): int {
-		return $_SESSION[$this->key]["__start__"];
+		return $this->_session["__start__"];
 	}
 
 	/**
 	 * @return int
 	 */
 	public function getEndTime(): int {
-		return $_SESSION[$this->key]["__end__"];
+		return $this->_session["__end__"] ?: 0;
 	}
 
 
-	public function __construct(string $key) {
+	/**
+	 * Session constructor.
+	 * @param string $key 'unique' key for a site
+	 * @param array $params same as session_start()
+	 */
+	public function __construct(string $key, $params = []) {
 		$this->key = $key;
+		$this->init($params);
 	}
 
 	/**
-	 * @param array $params
+	 * Already called by the constructor
+	 * @param array $params same as session_start()
 	 * @return bool false if the session has been theft
 	 */
 	public function init($params = []) {
-		session_start($params);
-
-		// Test Session
-		if (isset($_SESSION[$this->key]) && isset($_SESSION[$this->key]["__end__"])) {
-			$end = $_SESSION[$this->key]["__end__"];
-			if ($end > 0 && $end - time() < 0)
-				$this->destroy();
-		}
+		@session_start($params);
 
 		if (isset($params["cookie_lifetime"]))
 			$this->timeout = $params["cookie_lifetime"];
@@ -69,8 +89,24 @@ class Session {
 				"__start__" => time()
 			];
 		else if ($_SESSION[$this->key]["__headers__"] !== @$_SERVER['HTTP_USER_AGENT'] . @$_SERVER['HTTP_HOST']) {
-			// TODO: block session, not destroy (session theft)
+			// block session, not destroy (session theft)
+			$this->_session = [
+				"session" => [],
+				"__start__" => time(),
+				"__error__" => true
+			];
 			return false;
+		}
+
+		$this->_session = &$_SESSION[$this->key];
+
+		// Test Session
+		if (isset($this->_session["__end__"])) {
+			$end = $this->_session["__end__"];
+			if ($end > 0 && $end - time() < 0) {
+				$this->destroy();
+				$this->init($params); // recreate session
+			}
 		}
 
 		$this->setTimeout($this->timeout);
@@ -86,7 +122,7 @@ class Session {
 		if (is_string($keys))
 			$keys = [$keys];
 
-		$lastLevel = $_SESSION[$this->key]["session"];
+		$lastLevel = $this->_session["session"];
 		foreach ($keys as $key) {
 			if (!isset($lastLevel[$key])) {
 				//TODO: show warning? trigger_error("Nothing found at '[" . implode($keys, ', ') . "]'");
@@ -107,7 +143,7 @@ class Session {
 		if (is_string($keys))
 			$keys = [$keys];
 
-		$lastLevel = &$_SESSION[$this->key]["session"];
+		$lastLevel = &$this->_session["session"];
 		foreach ($keys as $key)
 			$lastLevel = &$lastLevel[$key];
 		$lastLevel = $value;
@@ -118,6 +154,8 @@ class Session {
 	 * Destroy the session
 	 */
 	public function destroy(): void {
-		unset($_SESSION[$this->key]);
+		unset($this->_session);
+		if (!$_SESSION[$this->key]["__error__"]) // Dont delete good session
+			unset($_SESSION[$this->key]);
 	}
 }
