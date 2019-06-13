@@ -21,21 +21,6 @@ $router
 			"here" => $res->getBaseUrl()
 		]);
 	})
-	->use('/media', [
-		"*" => [ // something, "" to say nothing (/media)
-			"method" => Router::GET,
-			"callback" => function(Response $res, $args) {
-				// test before all (not using $res
-				echo $args[0];
-			}
-		],
-		":file" => [
-			"method" => Router::GET,
-			"callback" => function(Response $res, $args) {
-				$res->sendFile('/path/to/' . $args["file"] );
-			}
-		]
-	])
 	->use('/file', require __DIR__ . '/routes.php')
 	->on('*', function (Response $res) {
 		$res->send(404);

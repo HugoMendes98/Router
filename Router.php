@@ -208,44 +208,23 @@ class Router {
     /**
      *
      * @param string $url
-     * @param string[]|callable(Router)|string $routesOrCallable callable or path to file with callable
+     * @param callable(Router, ...mixed)|string $routesOrCallable callable or path to file with callable
      * @param mixed ...$params to send to the callable
      * @return Router $this
      */
-    public function use(string $url, $routesOrCallable, ...$params) {
-        if (is_callable($routesOrCallable) || file_exists($routesOrCallable)) {
+    public function use(string $url, $callback, ...$params) {
+        if (is_callable($callback) || (is_string($callback) && file_exists($callback))) {
             $subURL = $this->_subRoute . $url;
             for ($length = 0; $length < strlen($subURL); $length++)
                 if (in_array($subURL[$length], ['*', ':'])) break;
 
             if (substr($this->_url, 0, $length) == substr($subURL, 0, $length)) {
-            	if (file_exists($routesOrCallable))
-					(require $routesOrCallable)(new Router($subURL), ...$params);
+            	if (is_string($callback) && file_exists($callback))
+					(require $callback)(new Router($subURL), ...$params);
 				else
-					$routesOrCallable(new Router($subURL), ...$params);
+					$callback(new Router($subURL), ...$params);
 			}
         }
-        else
-            foreach ($routesOrCallable as $key => $route) {
-                if (substr($key, 0, 1) !== '/')
-                    $key = '/' . $key;
-                $uri = $url . $key;
-                if (array_key_exists('routes', $route)) {
-                    $this->use($uri, $route['routes']);
-                } else {
-                    if (!isset($route["callback"]))
-                        $route["callback"] = function() {};
-                    if (!isset($route["method"]))
-                        $route["method"] = "";
-
-                    $callback = $route['callback'];
-                    if ($route['method'] === self::POST)
-                        $this->post($uri, $callback);
-                    else if($route['method'] === self::GET)
-                        $this->get($uri, $callback);
-                    else $this->on($uri, $callback);
-                }
-            }
         return $this;
     }
 }
