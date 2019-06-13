@@ -1,33 +1,42 @@
-<?php require_once __DIR__ . '/Render.php';
+<?php
+
+require_once __DIR__ . '/Render.php';
+require_once __DIR__ . '/Session.php';
 
 class Response {
 
-    private $_baseUrl;
+    private $_router;
     private $_viewsPath = null;
-    private $_method = "GET";
 
     /**
      * @return string
      */
     public function getBaseUrl() {
-        return $this->_baseUrl;
+        return $this->_router->getBaseURL();
     }
 
 	/**
 	 * @return string
 	 */
 	public function getMethod(): string {
-		return $this->_method;
+		return $this->_router->getMethod();
 	}
+
+    /**
+     * Return the session
+     * @return Session
+     */
+	public function Session(): Session {
+        return $this->_router->Session();
+    }
 
     /**
      * Response constructor.
      * @param Router
      */
     public function __construct(Router $router) {
-        $this->_baseUrl = $router->getBaseURL();
+        $this->_router = $router;
         $this->_viewsPath = $router->getViewsPath();
-        $this->_method = $router->getMethod();
     }
 
     /**
@@ -53,6 +62,7 @@ class Response {
     /**
      * Send data
      * @param int|string|array $data
+     * @param int $statusCode
      * @param boolean $jsonEncode default encode in JSON
      * @param string $contentType
      * @param boolean $stopScript to send more data
@@ -96,7 +106,7 @@ class Response {
 	 * @param bool $permant
      */
     public function redirect(string $url, bool $local = true, bool $permant = false) {
-        $this->setHeader("Location: " . ($local ? $this->_baseUrl : '') . $url, true, $permant ? 301 : 302);
+        $this->setHeader("Location: " . ($local ? $this->getBaseUrl() : '') . $url, true, $permant ? 301 : 302);
         $this->stopExec();
     }
 

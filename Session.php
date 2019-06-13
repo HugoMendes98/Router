@@ -64,11 +64,9 @@ class Session {
 	/**
 	 * Session constructor.
 	 * @param string $key 'unique' key for a site
-	 * @param array $params same as session_start()
 	 */
-	public function __construct(string $key, $params = []) {
+	public function __construct(string $key) {
 		$this->key = $key;
-		$this->init($params);
 	}
 
 	/**

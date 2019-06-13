@@ -1,4 +1,7 @@
-<?php require_once 'Response.php';
+<?php
+
+require_once 'Response.php';
+require_once 'Session.php';
 
 /**
  * Class Router
@@ -12,6 +15,7 @@ class Router {
     private $_subRoute;
     private $_url;
     private $_method;
+    private $_session;
 
     private $_viewsPath = null;
 
@@ -58,6 +62,14 @@ class Router {
     }
 
     /**
+     * Return the session
+     * @return Session
+     */
+    public function Session(): Session {
+        return $this->_session;
+    }
+
+    /**
      * Create the router
      * @param string $subRoute for an inner path
      */
@@ -65,6 +77,7 @@ class Router {
         $this->_baseUrl = pathinfo($_SERVER['PHP_SELF'], PATHINFO_DIRNAME);
         $this->_url = $this->removeSlash(str_replace($this->_baseUrl, "" , $_SERVER["REQUEST_URI"]));
         $this->_method = $_SERVER["REQUEST_METHOD"]; //GET || POST
+        $this->_session = new Session($this->_baseUrl);
 
         $this->_subRoute = $subRoute;
     }
