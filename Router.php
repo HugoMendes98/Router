@@ -72,12 +72,13 @@ class Router {
     /**
      * Create the router
      * @param string $subRoute for an inner path
+     * @param Session $session use existing session
      */
-    public function __construct(string $subRoute = "") {
+    public function __construct(string $subRoute = "", Session $session = null) {
         $this->_baseUrl = pathinfo($_SERVER['PHP_SELF'], PATHINFO_DIRNAME);
         $this->_url = $this->removeSlash(str_replace($this->_baseUrl, "" , $_SERVER["REQUEST_URI"]));
         $this->_method = $_SERVER["REQUEST_METHOD"]; //GET || POST
-        $this->_session = new Session($this->_baseUrl);
+        $this->_session = $session !== null ? $session : new Session($this->_baseUrl);
 
         $this->_subRoute = $subRoute;
     }
@@ -219,10 +220,11 @@ class Router {
                 if (in_array($subURL[$length], ['*', ':'])) break;
 
             if (substr($this->_url, 0, $length) == substr($subURL, 0, $length)) {
+                $router = new Router($subURL, $this->Session());
             	if (is_string($callback) && file_exists($callback))
-					(require $callback)(new Router($subURL), ...$params);
+					(require $callback)($router, ...$params);
 				else
-					$callback(new Router($subURL), ...$params);
+					$callback($router, ...$params);
 			}
         }
         return $this;
