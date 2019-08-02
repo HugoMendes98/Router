@@ -147,6 +147,13 @@ class Session {
 		$lastLevel = $value;
 	}
 
+    /**
+     * delete a key
+     * @param string|string[] $keys
+     */
+	public function delete($keys) {
+	    $this->set($keys, null);
+    }
 
 	/**
 	 * Destroy the session
