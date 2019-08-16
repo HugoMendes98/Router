@@ -10,6 +10,8 @@ require_once 'Session.php';
 class Router {
     const GET = 'GET';
     const POST = 'POST';
+    const PUT = 'PUT';
+    const DELETE = 'DELETE';
 
     private $_baseUrl;
     private $_subRoute;
@@ -77,7 +79,7 @@ class Router {
     public function __construct(string $subRoute = "", Session $session = null) {
         $this->_baseUrl = pathinfo($_SERVER['PHP_SELF'], PATHINFO_DIRNAME);
         $this->_url = $this->removeSlash(str_replace($this->_baseUrl, "" , $_SERVER["REQUEST_URI"]));
-        $this->_method = $_SERVER["REQUEST_METHOD"]; //GET || POST
+        $this->_method = $_SERVER["REQUEST_METHOD"];
         $this->_session = $session !== null ? $session : new Session($this->_baseUrl);
 
         $this->_subRoute = $subRoute;
@@ -196,13 +198,39 @@ class Router {
         return $this;
     }
 
-    /**
-     * @param string $uri
-     * @param callable $callback
-     * @return Router $this
-     */
-    public function on(string $uri, callable $callback) {
-        $this->testUrl($uri, $callback);
+	/**
+	 * @param string $uri
+	 * @param callable $callback
+	 * @return Router $this
+	 */
+	public function put(string $uri, callable $callback) {
+		if ($this->_method == self::PUT)
+			$this->testUrl($uri, $callback);
+		return $this;
+	}
+
+	/**
+	 * @param string $uri
+	 * @param callable $callback
+	 * @return Router $this
+	 */
+	public function delete(string $uri, callable $callback) {
+		if ($this->_method == self::DELETE)
+			$this->testUrl($uri, $callback);
+		return $this;
+	}
+
+	/**
+	 * @param string $uri
+	 * @param string[]|callable $verbs
+	 * @param callable $callback
+	 * @return Router $this
+	 */
+    public function on(string $uri, $verbs, callable $callback = null) {
+    	if (is_array($verbs) && $callback !== null && in_array($this->getMethod(), $verbs))
+			$this->testUrl($uri, $callback);
+		elseif (is_callable($verbs))
+			$this->testUrl($uri, $verbs);
         return $this;
     }
 
