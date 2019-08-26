@@ -78,10 +78,15 @@ class Router {
      */
     public function __construct(string $subRoute = "", Session $session = null) {
         $this->_baseUrl = pathinfo($_SERVER['PHP_SELF'], PATHINFO_DIRNAME);
-        $this->_url = $this->removeSlash(str_replace($this->_baseUrl, "" , $_SERVER["REQUEST_URI"]));
-        $this->_method = $_SERVER["REQUEST_METHOD"];
-        $this->_session = $session !== null ? $session : new Session($this->_baseUrl);
+		$this->_url = $this->removeSlash(ltrim($_SERVER["REQUEST_URI"], $this->_baseUrl));
 
+		if (substr($this->_url, 1) !== '/')
+			$this->_url = "/" . $this->_url;
+
+        $this->_session = $session !== null ? $session : new Session($this->_baseUrl);
+		$this->_baseUrl = $this->removeSlash($this->_baseUrl);
+
+		$this->_method = $_SERVER["REQUEST_METHOD"];
         $this->_subRoute = $subRoute;
     }
 
@@ -90,13 +95,11 @@ class Router {
      * @param string $path
      * @param string $folder
      * @param string|null $contentType
-     * @param bool $errorNotFound Raise an error if file not found
      * @return $this
      */
-    public function byEntry(string $path, string $folder, $contentType = null, $errorNotFound = false) {
-        $this->get($this->removeSlash($path) . '/*', function (Response $res, $args) use ($folder, $contentType, $errorNotFound) {
+	public function byEntry(string $path, string $folder, $contentType = null) {
+		$this->on($this->removeSlash($path) . '/*', function (Response $res, $args) use ($folder, $contentType) {
             $file = $folder . '/' . $args[0];
-            if ($errorNotFound || file_exists($file))
                 $res->sendFile($file, $contentType);
         });
         return $this;
