@@ -11,6 +11,7 @@ class Router {
     const GET = 'GET';
     const POST = 'POST';
     const PUT = 'PUT';
+    const PATCH = 'PATCH';
     const DELETE = 'DELETE';
 
     private $_baseUrl;
@@ -208,6 +209,17 @@ class Router {
 	 */
 	public function put(string $uri, callable $callback) {
 		if ($this->_method == self::PUT)
+			$this->testUrl($uri, $callback);
+		return $this;
+	}
+
+	/**
+	 * @param string $uri
+	 * @param callable $callback
+	 * @return Router $this
+	 */
+	public function patch(string $uri, callable $callback) {
+		if ($this->_method == self::PATCH)
 			$this->testUrl($uri, $callback);
 		return $this;
 	}
