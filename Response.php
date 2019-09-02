@@ -37,6 +37,12 @@ class Response {
     public function __construct(Router $router) {
         $this->_router = $router;
         $this->_viewsPath = $router->getViewsPath();
+
+		if (!$_REQUEST)
+			$_REQUEST = json_decode(file_get_contents("php://input"), true);
+
+		if ($this->getMethod() === Router::POST)
+			$_POST = $_REQUEST;
     }
 
     /**
