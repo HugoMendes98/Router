@@ -81,7 +81,8 @@ class Response {
         $this->setContentType($contentType);
         echo !$jsonEncode ? $data : json_encode($data);
 
-        if ($stopScript) $this->stopExec();
+        if ($stopScript)
+            $this->stopExec();
     }
 
     /**

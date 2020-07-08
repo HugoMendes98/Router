@@ -79,9 +79,9 @@ class Router {
      */
     public function __construct(string $subRoute = "", Session $session = null) {
         $this->_baseUrl = pathinfo($_SERVER['PHP_SELF'], PATHINFO_DIRNAME);
-		$this->_url = $this->removeSlash(ltrim($_SERVER["REQUEST_URI"], $this->_baseUrl));
+		$this->_url = $this->removeSlash(substr($_SERVER["REQUEST_URI"], strlen($this->_baseUrl)));
 
-		if (substr($this->_url, 1) !== '/')
+		if (!isset($this->_url[0]) || $this->_url[0] !== '/')
 			$this->_url = "/" . $this->_url;
 
         $this->_session = $session !== null ? $session : new Session($this->_baseUrl);
@@ -123,8 +123,15 @@ class Router {
         return $this;
     }
 
-    private function removeSlash(string $string) {
-        return substr($string, -1) === '/' ? substr($string, 0, -1) : $string;
+    private function removeSlash(string $string): string {
+        if (substr($string, -1) === '/')
+            $string = substr($string, 0, -1);
+
+        for ($i = 0; $i < strlen($string) - 1; ++$i) // Remove '//'
+            if ($string[$i] === '/' && $string[$i + 1] === '/')
+                $string = substr_replace($string, '', $i, 1);
+
+        return $string;
     }
 
     /**
