@@ -164,7 +164,7 @@ class Router {
                 $url = substr($url, 0, $pos);
         }
 
-        $isOk = $uri == $url;
+        $isOk = $uri == $url || ($uri === '' && $url === '/');
 
         $matches = [];
         if (!$isOk && (strpos($uri, '*') !== false || strpos($uri, ':') !== false )) {
@@ -186,7 +186,7 @@ class Router {
      * @return Router $this
      */
     public function get(string $uri, callable $callback) {
-        if ($this->_method == self::GET)
+        if ($this->_method === self::GET)
             $this->testUrl($uri, $callback);
         return $this;
     }
@@ -197,7 +197,7 @@ class Router {
      * @return Router $this
      */
     public function post(string $uri, callable $callback) {
-        if ($this->_method == self::POST)
+        if ($this->_method === self::POST)
             $this->testUrl($uri, $callback);
         return $this;
     }
@@ -208,7 +208,7 @@ class Router {
 	 * @return Router $this
 	 */
 	public function put(string $uri, callable $callback) {
-		if ($this->_method == self::PUT)
+		if ($this->_method === self::PUT)
 			$this->testUrl($uri, $callback);
 		return $this;
 	}
@@ -219,7 +219,7 @@ class Router {
 	 * @return Router $this
 	 */
 	public function patch(string $uri, callable $callback) {
-		if ($this->_method == self::PATCH)
+		if ($this->_method === self::PATCH)
 			$this->testUrl($uri, $callback);
 		return $this;
 	}
@@ -230,7 +230,7 @@ class Router {
 	 * @return Router $this
 	 */
 	public function delete(string $uri, callable $callback) {
-		if ($this->_method == self::DELETE)
+		if ($this->_method === self::DELETE)
 			$this->testUrl($uri, $callback);
 		return $this;
 	}
