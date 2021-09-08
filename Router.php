@@ -20,6 +20,7 @@ class Router {
     private $_method;
     private $_session;
 
+    private $_onError = [];
     private $_viewsPath = null;
 
     /**
@@ -46,6 +47,10 @@ class Router {
         return $this->_method;
     }
 
+    public function addOnError(callable $function) {
+        $this->_onError[] = $function;
+    }
+    
     /**
      * Return the path to the views
      * @return string
@@ -183,7 +188,18 @@ class Router {
         if ($isOk) {
             if(!empty($matches))
                 array_splice($matches, 0, 1);
-            $callback(new Response($this), $matches);
+            
+            $response = new Response($this);
+            try {
+                $result = $callback($response, $matches);
+                if ($result)
+                    $response->send($result);
+            } catch (Exception $exception) {
+                foreach ($this->_onError as $fn)
+                    $fn($exception, $response, $matches);
+
+                $response->send(["message" => "InternalServerError", "statusCode" => 500], 500);
+            }
         }
     }
 
