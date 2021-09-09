@@ -80,16 +80,23 @@ class Router {
     /**
      * Create the router
      * @param string $subRoute for an inner path
-     * @param Session $session use existing session
+     * @param Router $router use existing router
      */
-    public function __construct(string $subRoute = "", Session $session = null) {
+    public function __construct(string $subRoute = "", Router $router = null) {
         $this->_baseUrl = pathinfo($_SERVER['PHP_SELF'], PATHINFO_DIRNAME);
 		$this->_url = $this->removeSlash(substr($_SERVER["REQUEST_URI"], strlen($this->_baseUrl)));
 
 		if (!isset($this->_url[0]) || $this->_url[0] !== '/')
 			$this->_url = "/" . $this->_url;
 
-        $this->_session = $session !== null ? $session : new Session($this->_baseUrl);
+        if ($router) {
+            $this->_onError = $router->_onError;
+            $this->_session = $router->_session;
+        }
+
+        if (!$this->_session)
+            $this->_session = new Session($this->_baseUrl);
+
 		$this->_baseUrl = $this->removeSlash($this->_baseUrl);
 
 		$this->_method = $_SERVER["REQUEST_METHOD"];
@@ -145,7 +152,7 @@ class Router {
      * @return string
      */
     private function doPattern(string $string) {
-        preg_match('/([\w\/]*)(\:[a-zA-Z]+|\*)([\w\/\:\.\*]*)/', $string, $matches);
+        preg_match('/([\w\-\/]*)(\:[a-zA-Z]+|\*)([\w\-\/\:\.\*]*)/', $string, $matches);
 
         $wanted = $matches[2];
         $after = $matches[3];
@@ -186,7 +193,7 @@ class Router {
             $matches = [$this->_url];
 
         if ($isOk) {
-            if(!empty($matches))
+            if (!empty($matches))
                 array_splice($matches, 0, 1);
             
             $response = new Response($this);
@@ -286,7 +293,7 @@ class Router {
                 if (in_array($subURL[$length], ['*', ':'])) break;
 
             if (substr($this->_url, 0, $length) == substr($subURL, 0, $length)) {
-                $router = new Router($subURL, $this->Session());
+                $router = new Router($subURL, $this);
             	if (is_string($callback) && file_exists($callback))
 					(require $callback)($router, ...$params);
 				else
